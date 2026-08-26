@@ -1,0 +1,31 @@
+{
+  "version": "PBGER-v0.8",
+  "records": 10000,
+  "pairs": 5000,
+  "users": 3026,
+  "task_axes": [
+    "where",
+    "intervention",
+    "whether"
+  ],
+  "profile_swap_removed": true,
+  "profile_schema": "one history-supported global behavior vector per user",
+  "split_relevance_counts": {
+    "train:1": 3500,
+    "train:0": 3500,
+    "validation:1": 500,
+    "validation:0": 500,
+    "test:1": 1000,
+    "test:0": 1000
+  },
+  "artifacts": {
+    "data/processed/pbger_v0_8_lite/pbger_v0_8.jsonl": {
+      "sha256": "f0a292c83a2e49fc1c120a1d432608ce4ed70a7e7a93ad72fc999b97479322cf",
+      "records": 10000
+    },
+    "data/processed/pbger_v0_8_lite/pbger_v0_8_global_profiles.jsonl": {
+      "sha256": "7446fb145fd6766c9dbd48a114f3d72ee55017255364bdeb8fb1816068c17ff6",
+      "records": 3026
+    }
+  }
+}

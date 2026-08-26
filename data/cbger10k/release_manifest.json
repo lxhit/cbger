@@ -1,0 +1,26 @@
+{
+  "name": "CBGER-10K",
+  "historical_name": "PBGER-v0.8",
+  "records": 10000,
+  "pairs": 5000,
+  "users": 3026,
+  "segments_per_timeline": 9,
+  "splits": {
+    "train": {"factual": 3500, "counterfactual": 3500},
+    "validation": {"factual": 500, "counterfactual": 500},
+    "test": {"factual": 1000, "counterfactual": 1000}
+  },
+  "task_axes": ["where", "whether", "intervention"],
+  "construction": {
+    "behavior_source": "MicroLens",
+    "video_source": "FineVideo",
+    "visual_teacher": "Qwen3-VL-8B-Instruct BF16 4 FPS",
+    "matching_encoder": "BAAI/bge-m3",
+    "solver_backbone": "CLIP ViT-B/32"
+  },
+  "seeds": {
+    "construction": 20260815,
+    "experiments": [20260831, 20260832, 20260833]
+  }
+}
+
