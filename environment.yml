@@ -1,0 +1,12 @@
+name: cbger
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  - ffmpeg>=7
+  - pip
+  - pip:
+      - -e .[vision,dev]
+

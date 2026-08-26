@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+message: "If you use CBGER-10K or CBGER, please cite this project."
+title: "Does This Moment Justify the Recommendation? Counterfactual Behavior-Grounded Evidence Retrieval for Personalized Video Recommendation"
+type: software
+authors:
+  - name: "CBGER Authors"

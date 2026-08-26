@@ -1,0 +1,9 @@
+name: cbger-original-snapshot
+channels:
+  - defaults
+dependencies:
+  - ffmpeg
+  - pip
+  - python=3.11
+  - deno[version='>=2.3']
+  - tectonic
