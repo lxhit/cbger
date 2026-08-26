@@ -1,0 +1,27 @@
+{
+  "split": "test",
+  "positive_records": 1000,
+  "paired_records": 1000,
+  "mrr": 0.42421150793650736,
+  "ndcg_at_1": 0.212,
+  "ndcg_at_3": 0.3778415498321481,
+  "ndcg_at_5": 0.46468251850846154,
+  "ndcg_all": 0.55998486030985,
+  "pair_accuracy": 0.588,
+  "pair_tie_rate": 0.0,
+  "intervention_consistency": 0.668,
+  "mean_intervention_margin": 0.4217821068763733,
+  "task_axes": {
+    "where": [
+      "mrr",
+      "ndcg"
+    ],
+    "intervention": [
+      "intervention_consistency"
+    ],
+    "whether": [
+      "pair_accuracy"
+    ]
+  },
+  "profile_swap_in_scope": false
+}

@@ -1,0 +1,116 @@
+{
+  "dataset": "PBGER-v0.8",
+  "frozen_where_head": true,
+  "seeds": [
+    20260831,
+    20260832,
+    20260833
+  ],
+  "methods": {
+    "Max segment score": {
+      "validation_pair_accuracy": 0.47733333333333333,
+      "mean": 0.486,
+      "std": 0.019974984355438166,
+      "values": [
+        0.463,
+        0.499,
+        0.496
+      ]
+    },
+    "Mean / Top-K pooling": {
+      "selected_on_validation": "Mean pooling",
+      "validation_pair_accuracy": 0.6733333333333333,
+      "mean": 0.6976666666666667,
+      "std": 0.0070237691685684995,
+      "values": [
+        0.691,
+        0.697,
+        0.705
+      ],
+      "grid": {
+        "Max segment score": {
+          "validation_pair_accuracy": 0.47733333333333333,
+          "mean": 0.486,
+          "std": 0.019974984355438166,
+          "values": [
+            0.463,
+            0.499,
+            0.496
+          ]
+        },
+        "Mean pooling": {
+          "validation_pair_accuracy": 0.6733333333333333,
+          "mean": 0.6976666666666667,
+          "std": 0.0070237691685684995,
+          "values": [
+            0.691,
+            0.697,
+            0.705
+          ]
+        },
+        "Top-2 pooling": {
+          "validation_pair_accuracy": 0.5633333333333334,
+          "mean": 0.566,
+          "std": 0.01664331697709319,
+          "values": [
+            0.547,
+            0.573,
+            0.578
+          ]
+        },
+        "Top-3 pooling": {
+          "validation_pair_accuracy": 0.6126666666666667,
+          "mean": 0.616,
+          "std": 0.01769180601295415,
+          "values": [
+            0.6,
+            0.613,
+            0.635
+          ]
+        }
+      }
+    },
+    "Logistic calibration": {
+      "mean": 0.4860000014305115,
+      "std": 0.01997498679035591,
+      "values": [
+        0.46299999952316284,
+        0.49900001287460327,
+        0.4959999918937683
+      ]
+    },
+    "Learned existence head": {
+      "mean": 0.4560000002384186,
+      "std": 0.003464108635340327,
+      "values": [
+        0.4580000042915344,
+        0.4519999921321869,
+        0.4580000042915344
+      ]
+    },
+    "ACEC w/o CF supervision": {
+      "mean": 0.4150000015894572,
+      "std": 0.001732045714480737,
+      "values": [
+        0.414000004529953,
+        0.414000004529953,
+        0.4169999957084656
+      ]
+    },
+    "Full ACEC": {
+      "mean": 0.6976666666666667,
+      "std": 0.005131601439446889,
+      "values": [
+        0.692,
+        0.699,
+        0.702
+      ]
+    }
+  },
+  "definitions": {
+    "Logistic calibration": "Platt scaling of max segment score with pointwise BCE.",
+    "Learned existence head": "Two-layer MLP over sorted segment scores with pointwise BCE.",
+    "ACEC w/o CF supervision": "ACEC distribution features with pointwise BCE; no pairwise CF objective.",
+    "Full ACEC": "ACEC distribution features with antisymmetric factual/CF pairwise objective."
+  }
+}
