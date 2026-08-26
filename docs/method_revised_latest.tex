@@ -1,0 +1,136 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Overview}
+
+We propose a compact behavior-conditioned evidence model for CBGER. Given a user behavior profile and a nine-segment candidate timeline, the model produces segment-level evidence scores for \textbf{Where} and a video-level evidence score for \textbf{Whether}. Frozen CLIP encoders provide profile and segment representations~\cite{radford2021learning}. A lightweight trainable scorer combines a CLIP similarity residual with a small relative-temporal correction; no temporal Transformer or interest-routing module is used. During training, the same model is applied to matched factual and counterfactual timelines. Structured objectives supervise factual localization, video-level factual--counterfactual ordering, the response at the edited slot, and invariance of unchanged distractors.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/pbger_algorithm_v6_hd.png}
+\caption{\textbf{Behavior-conditioned evidence scoring and structured counterfactual learning.} Frozen CLIP features are processed by lightweight projections, a CLIP residual branch, and a relative-temporal MLP to produce segment evidence logits. Their ranking answers \textbf{Where}, while parameter-free mean pooling answers \textbf{Whether}. Factual $V^+$ and matched counterfactual $V^-$ share parameters and are jointly supervised by localization, existence-ordering, local-intervention, and distractor-invariance losses. Gradients update only the lightweight CBGER scorer; CLIP remains frozen.}
+\label{fig:model}
+\end{figure*}
+
+\subsection{Behavior-Conditioned Evidence Scoring}
+
+Let $x_i\in\mathbb R^{d_c}$ denote the frozen CLIP representation of segment $i$, and let $p\in\mathbb R^{d_c}$ denote the frozen CLIP text representation of the serialized behavior profile. We first compute the raw CLIP similarity
+\begin{equation}
+r_i=\alpha\,\operatorname{cos}(p,x_i),
+\label{eq:raw-clip}
+\end{equation}
+where $\alpha$ is a learnable scale. Lightweight projections map both modalities to a shared $d$-dimensional space:
+\begin{equation}
+\hat p=\operatorname{LN}(\operatorname{GELU}(W_p p+b_p)),
+\qquad
+\hat x_i=\operatorname{LN}(\operatorname{GELU}(W_x x_i+b_x)).
+\end{equation}
+The projected similarity $c_i=\alpha\,\operatorname{cos}(\hat p,\hat x_i)$ is combined with the raw CLIP score through a constrained residual weight:
+\begin{equation}
+m_i=\beta r_i+(1-\beta)c_i,
+\qquad
+\beta=0.9+0.1\sigma(b).
+\label{eq:clip-residual}
+\end{equation}
+This parameterization preserves the pretrained CLIP geometry while allowing a small task-specific correction.
+
+To encode local temporal structure without self-attention, we construct
+\begin{equation}
+d_i=
+[\hat x_i-\hat x_{i-1};\,
+ \hat x_i-\hat x_{i+1};\,
+ \ell_i;\,b_i^{\rm L};\,b_i^{\rm R}],
+\qquad
+h_i=\operatorname{MLP}_{\rm temp}(d_i),
+\label{eq:relative-temporal}
+\end{equation}
+where $\ell_i$ is the normalized segment duration and $b_i^{\rm L},b_i^{\rm R}$ indicate timeline boundaries. The final evidence logit is
+\begin{equation}
+s_i=m_i+\gamma\,\operatorname{cos}(\hat p,h_i),
+\qquad
+\gamma=0.02\sigma(g).
+\label{eq:segment-score}
+\end{equation}
+The bounded gate makes temporal context a light correction rather than a replacement for semantic similarity. The localized prediction is
+\begin{equation}
+\hat y=\arg\max_i s_i,
+\end{equation}
+and ranking $\{s_i\}_{i=1}^{N}$ defines the \textbf{Where} pathway.
+
+\subsection{Video-Level Evidence Estimation}
+
+Localization does not by itself establish that valid evidence exists: after evidence replacement, a maximum operator must still select the strongest distractor. We therefore use parameter-free mean pooling for the \textbf{Whether} score:
+\begin{equation}
+q(u,V)=\frac{1}{N}\sum_{i=1}^{N}s_i.
+\label{eq:mean-pool}
+\end{equation}
+This rule evaluates support over the complete controlled timeline, introduces no additional parameters, and is compared with alternative aggregators in the ablation study.
+
+\subsection{Intervention Response}
+
+The intervention task measures whether the score of the edited focal moment decreases when its supporting evidence is replaced. For a factual--counterfactual pair $(V^+,V^-)$ with the intervention applied at slot $y$, we define
+\begin{equation}
+I(u,V^+,V^-)
+=\mathbf{1}\!\left[s_y(u,V^+)>s_y(u,V^-)\right].
+\label{eq:intervention-correct}
+\end{equation}
+The dataset-level Intervention score is the mean correctness over all $M$ matched pairs:
+\begin{equation}
+\operatorname{Intervention}
+=\frac{1}{M}\sum_{n=1}^{M}
+I(u_n,V_n^+,V_n^-).
+\label{eq:intervention-metric}
+\end{equation}
+Unlike \textbf{Whether}, which compares the video-level scores $q(u,V^+)$ and $q(u,V^-)$, Intervention evaluates the model's local response at the known edited slot.
+
+\subsection{Structured Counterfactual Learning}
+
+Let $V^+$ be a factual timeline with evidence at slot $y$, and let $V^-$ be its matched counterfactual obtained by replacing only that slot. Both timelines are processed with shared parameters, producing $S^+=\{s_i^+\}$ and $S^-=\{s_i^-\}$.
+
+\paragraph{Factual localization.}
+We supervise the evidence position using temperature-scaled cross entropy and a hard-negative ranking margin:
+\begin{equation}
+\mathcal L_{\rm loc}
+=-log\frac{\exp(s_y^+/\tau)}{\sum_{i=1}^{N}\exp(s_i^+/\tau)},
+\end{equation}
+\begin{equation}
+\mathcal L_{\rm rank}
+=\frac{1}{N-1}\sum_{i\neq y}[m_r-s_y^++s_i^+]_+.
+\end{equation}
+
+\paragraph{Video-level evidence ordering.}
+The factual timeline should provide stronger support than its counterfactual:
+\begin{equation}
+\mathcal L_{\rm whether}
+=\log\!\left(1+\exp\!\left[-\frac{q(u,V^+)-q(u,V^-)}{\tau_q}\right]\right).
+\label{eq:whether-loss}
+\end{equation}
+This objective directly matches the factual--counterfactual ordering measured by Pair Accuracy.
+
+\paragraph{Local intervention and distractor invariance.}
+Because only the focal slot is edited, its score should decrease while the unchanged distractors should remain stable:
+\begin{equation}
+\mathcal L_{\rm int}=[m_i-s_y^+ + s_y^-]_+,
+\label{eq:int-loss}
+\end{equation}
+\begin{equation}
+\mathcal L_{\rm keep}
+=\frac{1}{|D|}\sum_{j\in D}(s_j^+-s_j^-)^2,
+\end{equation}
+where $D$ indexes the eight shared distractor slots. The latter term prevents a trivial global shift of all counterfactual scores.
+
+The complete objective is
+\begin{equation}
+\mathcal L
+=\mathcal L_{\rm loc}
++\lambda_r\mathcal L_{\rm rank}
++\lambda_q\mathcal L_{\rm whether}
++\lambda_i\mathcal L_{\rm int}
++\lambda_k\mathcal L_{\rm keep}.
+\label{eq:total-loss}
+\end{equation}
+All losses are computed from the shared factual and counterfactual forward passes. Gradients update the projections, residual and temporal gates, relative-temporal MLP, and evidence scorer, while the CLIP image and text encoders remain frozen.
+
+\subsection{Complexity}
+
+For $N$ timeline segments, CBGER requires $O(Nd)$ scoring and temporal-difference computation. Mean pooling costs $O(N)$ and adds no parameters. This keeps the model substantially lighter than attention-based temporal encoders while preserving an explicit separation between localization and evidence existence.

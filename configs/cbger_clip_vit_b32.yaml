@@ -1,0 +1,29 @@
+dataset: data/cbger10k/cbger10k.jsonl
+profiles: data/cbger10k/global_profiles_clip_vit_b32.jsonl
+features: data/features/clip_vit_b32_segment_features.jsonl
+seeds: [20260831, 20260832, 20260833]
+model:
+  input_dim: 512
+  hidden_dim: 256
+  raw_residual: true
+training:
+  warmup_epochs: 2
+  counterfactual_epochs: 2
+  robust_epochs: 2
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+  distill_weight: 2.0
+  counterfactual_distill_scale: 0.25
+  robust_distill_scale: 0.0
+  pair_weight: 2.0
+  necessity_weight: 0.5
+  sufficiency_weight: 0.5
+  relocation_weight: 1.5
+  personalization_weight: 0.0
+  sparse_weight: 0.0
+  no_routing: true
+  preload_features: true
+evaluation:
+  split: test
+  whether_aggregation: mean
+

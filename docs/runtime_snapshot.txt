@@ -1,0 +1,8 @@
+python=3.11.15
+platform=Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+torch=2.13.0+cu130
+cuda=13.0
+cudnn=92000
+transformers=5.14.1
+numpy=2.4.6
+gpu=NVIDIA GeForce RTX 4090 D
